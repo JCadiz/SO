@@ -4,7 +4,7 @@
 #include <ctype.h> 
 #define MAXIMA_LONGITUD_CADENA 5000
 
-//Funcion para leer archivo
+//Funcion para cifrar archivo
 void cifrado(char path[]){
 
     FILE *archivo, *archivo2;
@@ -94,7 +94,7 @@ void cifrado(char path[]){
 
 }
 
-//Funcion para guardar archivo
+//Funcion para descifrar archivo
 void descifrado(char path[]){
     
     FILE *archivo3, *archivo4;

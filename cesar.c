@@ -128,32 +128,6 @@ int ord(char c)
     return (int)c; 
 }
 
-//Funcion para leer archivo
-void leerArchivo(char path[]){
-    FILE *archivo;
-    int numero;
-    
-    archivo = fopen(path, "r");
-
-    if (archivo != NULL){
-        while(!feof(archivo)){
-            fscanf(archivo, "%d\n", &numero);
-
-            printf("numero: %d\n", numero);
-        }
-    }
-
-    fclose(archivo);
-}
-
-//Funcion para guardar archivo
-void guardarArchivo(char path[],int numero){
-    FILE *archivo;
-    archivo = fopen(path, "a");
-
-
-}
-
 int main(void) {
   // El original, el cifrado y luego el descifrado
   char mensajeCifrado[MAXIMA_LONGITUD_CADENA], mensajeDescifrado[MAXIMA_LONGITUD_CADENA];

@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <string.h> // isalpha, isupper
 #include <ctype.h> // strcspn
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 #define LONGITUD_ALFABETO 26
 #define INICIO_ALFABETO_MAYUSCULAS 65
@@ -262,40 +265,35 @@ int ord(char c)
     return (int)c; 
 }
 
-int main(void) {
+int main(int argc, char *argv[]) {
     int i=1, opcion=0;
     char mensajeCifrado[MAXIMA_LONGITUD_CADENA], mensajeDescifrado[MAXIMA_LONGITUD_CADENA];
+    int nprocesos= atoi(argv[1]);
+    pid_t childpid;
 
-    while (i != 0){
-        printf("    Forma Secuencial - Doble Cifrado    \n");
-        printf("\n");
-        printf("Primero Cifrado Murcielago Y luego Cifrado Cesar \n");
-        printf("\n");
-        printf("1. Crifrar \n");
-        printf("2. Descrifrar \n");
-        printf("3. terminar \n");
-        scanf("%d", &opcion);
-        printf("\n");
-
-        switch (opcion)
-        {
-        case 1:
-            printf("Eligio Cifrar \n");
-            printf("\n");
-            cifrado( mensajeCifrado, 2, "archivo.txt");
-            printf("\n");
-            break;
-        case 2:
-            printf("Eligio Descifrar \n");
-            printf("\n");
-            descifrado(mensajeDescifrado, 2,"Cifrado.txt");
-            printf("\n");
-            break;
-        default:
-            i=0;
-            break;
+    for (int j=0; j< nprocesos; j++){
+        if( (childpid = fork() ) <0 ){
+            perror("fork");
+            exit(1);   
+        }//hijos que seran las ramas
+        if (childpid == 0){
+            printf("Rama: soy el hijo %d, mi padre es %d\n",getpid(),getppid());
+            for(int z =0; z< nprocesos; z ++){
+                if( (childpid = fork() ) <0 ){
+                    perror("fork");
+                    exit(1);   
+                }//hijos que seran hojas
+                if (childpid == 0){
+                    printf("hojas: soy el hijo %d, mi padre es %d\n",getpid(),getppid());
+                    exit(0);
+                }
+            }
+            exit(0);
         }
-        
+        if (childpid > 0){
+            //estoy en el primer papa
+            
+        }
     }
 
     return 0;
