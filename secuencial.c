@@ -209,7 +209,7 @@ void descifrado(char *destino, int rotaciones, char path[]){
             }
             {
                 case '3':
-                mensaje[i]= 99;
+                destino[i]= 99;
                 break;
             }
             {

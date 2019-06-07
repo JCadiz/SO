@@ -17,13 +17,74 @@
 const char *alfabetoMinusculas = "abcdefghijklmnopqrstuvwxyz",
            *alfabetoMayusculas = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-void cifrado(char *destino, int posiciones, char path[]);
-void descifrado(char *destino, int posiciones, char path[]);
+void cifradoCesar(char *destino, int posiciones, char path[], int pid, int inicio, int fin, int longitud);
+void descifradoCesar(char *destino, int posiciones, char path[], int pid, int inicio, int fin, int longitud);
+void cifradoMurcielago(char path[], int pid);
+void descifradoMurcielago(char path[], int pid);
 // Obtener el valor entero de un carácter:
 int ord(char c); // https://parzibyte.me/blog/2018/12/11/ord-chr-c/
 
-//Funcion para leer archivo
-void cifrado(char *destino, int rotaciones, char path[]){
+//Funcion para cifrado cesar
+void cifradoCesar(char *destino, int rotaciones, char path[], int pid, int inicio, int fin,int longitud){
+
+    FILE *archivo, *archivo2;
+    int tam=0;
+    tam = fin - inicio;
+    char mensaje[longitud], auxmensaje[tam];
+    char guardar;
+    
+    archivo = fopen(path, "r");
+    
+    if (archivo != NULL){
+        while(!feof(archivo)){
+            fgets(mensaje, MAXIMA_LONGITUD_CADENA, archivo);
+
+            printf("El mensaje original es: \n%s\n", mensaje);
+            printf("\n");
+        }
+    }
+    fclose(archivo);
+
+    // cifrado cesar aqui
+
+    int i = 0;
+    while (mensaje[i]) {
+        char caracterActual = mensaje[i];
+        int posicionOriginal = ord(caracterActual);
+        if (!isalpha(caracterActual)) {
+        destino[i] = caracterActual;
+        i++;
+        continue; // Ir a la siguiente iteración; por eso arriba aumentamos a i
+        }
+        if (isupper(caracterActual)) {
+        destino[i] =
+            alfabetoMayusculas[(posicionOriginal - INICIO_ALFABETO_MAYUSCULAS +
+                                rotaciones) %
+                                LONGITUD_ALFABETO];
+        } else {
+
+        destino[i] =
+            alfabetoMinusculas[(posicionOriginal - INICIO_ALFABETO_MINUSCULAS +
+                                rotaciones) %
+                                LONGITUD_ALFABETO];
+        }
+        i++;
+    }
+
+    printf("El mensaje cifrado Cesar es: \n%s\n", destino);
+
+    archivo2 = fopen("Cifrado.txt", "w");
+
+     if (archivo2 != NULL){
+        fprintf(archivo2, "\n%s", destino);
+
+        fclose(archivo2);
+    }
+
+}
+
+// cifrar murcielago en las ramas
+void cifradoMurcielago(char path[], int pid){
 
     FILE *archivo, *archivo2;
 
@@ -100,52 +161,19 @@ void cifrado(char *destino, int rotaciones, char path[]){
         }
     }
 
-    printf("Texto Encriptado en Murcielago es: \n%s\n", mensaje);
-    printf("\n");
-    printf("Ahora se Cifra por el metodo Cesar \n");
-    printf("\n");
-
-    // cifrado cesar aqui
-
-    int i = 0;
-    while (mensaje[i]) {
-        char caracterActual = mensaje[i];
-        int posicionOriginal = ord(caracterActual);
-        if (!isalpha(caracterActual)) {
-        destino[i] = caracterActual;
-        i++;
-        continue; // Ir a la siguiente iteración; por eso arriba aumentamos a i
-        }
-        if (isupper(caracterActual)) {
-        destino[i] =
-            alfabetoMayusculas[(posicionOriginal - INICIO_ALFABETO_MAYUSCULAS +
-                                rotaciones) %
-                                LONGITUD_ALFABETO];
-        } else {
-
-        destino[i] =
-            alfabetoMinusculas[(posicionOriginal - INICIO_ALFABETO_MINUSCULAS +
-                                rotaciones) %
-                                LONGITUD_ALFABETO];
-        }
-        i++;
-    }
-
-    printf("El mensaje cifrado con Murcielago y Cesar es: \n%s\n", destino);
+    printf("El mensaje cifrado con Murcielago y Cesar es: \n%s\n", mensaje);
 
     archivo2 = fopen("Cifrado.txt", "w");
 
      if (archivo2 != NULL){
-        fprintf(archivo2, "\n%s", destino);
+        fprintf(archivo2, "\n%s", mensaje);
 
         fclose(archivo2);
     }
-
-
 }
 
 //Funcion para Descifrar el archivo
-void descifrado(char *destino, int rotaciones, char path[]){
+void descifradoCesar(char *destino, int rotaciones, char path[], int pid, int inicio, int fin, int longitud){
     
     FILE *archivo3, *archivo4;
 
@@ -186,11 +214,33 @@ void descifrado(char *destino, int rotaciones, char path[]){
         }
         i++;
     }
-    printf("El mensaje descifrado por Cesar es: \n%s\n",destino);
-    printf("\n");
-    printf("Ahora se descifrar por el metodo Murcielago \n");
-    printf("\n");
+    
+     printf("Texto Descrifrado: \n%s\n", destino);
 
+     if (archivo4 != NULL){
+        fprintf(archivo4, "\n%s", destino);
+
+        fclose(archivo4);
+    }
+
+}
+// descrifrar murcielago
+void descifradoMurcielago(char path[], int pid){
+
+    FILE *archivo3, *archivo4;
+
+    char destino[MAXIMA_LONGITUD_CADENA];
+    
+    archivo3 = fopen(path, "r");
+    archivo4= fopen("Descifrado.txt", "w");
+    
+    if (archivo3 != NULL){
+        while(!feof(archivo3)){
+            fgets(destino, MAXIMA_LONGITUD_CADENA, archivo3);
+            printf("El mensaje original es: \n%s\n", destino);
+            printf("\n");
+        }
+    }
 
     for (int i=0; i<=100; i++) {
     
@@ -212,7 +262,7 @@ void descifrado(char *destino, int rotaciones, char path[]){
             }
             {
                 case '3':
-                mensaje[i]= 99;
+                destino[i]= 99;
                 break;
             }
             {
@@ -250,7 +300,7 @@ void descifrado(char *destino, int rotaciones, char path[]){
         }
     }
 
-     printf("Texto Descrifrado: \n%s\n", destino);
+    printf("Texto Descrifrado: \n%s\n", destino);
 
      if (archivo4 != NULL){
         fprintf(archivo4, "\n%s", destino);
@@ -266,35 +316,104 @@ int ord(char c)
 }
 
 int main(int argc, char *argv[]) {
-    int i=1, opcion=0;
+    int i=1, opcion=0, longitud=0, inicio=0, fin=0, validar = 2;
     char mensajeCifrado[MAXIMA_LONGITUD_CADENA], mensajeDescifrado[MAXIMA_LONGITUD_CADENA];
     int nprocesos= atoi(argv[1]);
-    pid_t childpid;
+    int numeroh = nprocesos * nprocesos;
+    int pidr = 0, pidh = 0; // tomar los pid de las ramas y hojas
+    int aux=0; // auxiliar para recorrer vector de los inicios y fin de cada mensaje para las hojas 
+    int begin[numeroh], end[numeroh]; // vector para guardar los inicios y fin de cada mensaje
+    pid_t ramas[nprocesos], hojas[numeroh] ,wpid;
+    FILE *main;
+
+    char cod[MAXIMA_LONGITUD_CADENA];
+    
+    main = fopen("archivo.txt", "r");
+    
+    if (main != NULL){
+        while(!feof(main)){
+            fgets(cod, MAXIMA_LONGITUD_CADENA, main);
+        }
+        longitud = strlen(cod);
+        //printf("la longitud de la mensaje es: %d\n",longitud);
+        //printf("\n");
+    }
+    fclose(main);
+
+    if (longitud % 2 == 0){
+        //printf("el numero es par: %d\n",(longitud % 2));
+        validar = 0; // es par
+    }else {
+        //printf("el numero es impar: %d\n",(longitud % 2));
+        validar = 1; // es impar
+    }
+    
+    //calculo de los inicios y final para cada hijo
+    for (int k=0; k < numeroh; k++){
+        if(validar == 1){ // es que la longitud del mensaje es impar
+            if(k == (numeroh-1)){
+                fin = longitud;
+                inicio= k * (longitud / numeroh);
+                //printf("inicio es: %d\n", inicio);
+                //printf("final ultimo: %d\n", fin);
+                //printf("\n");
+                begin[k]=inicio;
+                end[k]=fin;
+            }else{
+                fin = ((k+1) * (longitud / numeroh))-1;
+                inicio= k * (longitud / numeroh);
+                //printf("inicio es: %d\n", inicio);
+                //printf("final es: %d\n", fin);
+                //printf("\n");
+                begin[k]=inicio;
+                end[k]=fin;
+            }
+        }else{
+            if(k == (numeroh-1)){
+                fin = longitud;
+                inicio= k * (longitud / numeroh);
+                //printf("inicio es: %d\n", inicio);
+                //printf("final ultimo: %d\n", fin);
+                //printf("\n");
+                begin[k]=inicio;
+                end[k]=fin;
+            }else{
+                fin = ((k+1) * (longitud / numeroh))-1;
+                inicio= k * (longitud / numeroh);
+                //printf("inicio es: %d\n", inicio);
+                //printf("final es: %d\n", fin);
+                //printf("\n");
+                begin[k]=inicio;
+                end[k]=fin;
+            }
+        }
+    }
 
     for (int j=0; j< nprocesos; j++){
-        if( (childpid = fork() ) <0 ){
-            perror("fork");
-            exit(1);   
-        }//hijos que seran las ramas
-        if (childpid == 0){
-            printf("Rama: soy el hijo %d, mi padre es %d\n",getpid(),getppid());
+        //hijos que seran las ramas
+        if ( (ramas[j] = fork() ) == 0){
+            //printf("Rama: soy el hijo %d, mi padre es %d\n",getpid(),getppid());
+
+            pidr= getpid();
+            
             for(int z =0; z< nprocesos; z ++){
-                if( (childpid = fork() ) <0 ){
-                    perror("fork");
-                    exit(1);   
-                }//hijos que seran hojas
-                if (childpid == 0){
-                    printf("hojas: soy el hijo %d, mi padre es %d\n",getpid(),getppid());
+                if ((hojas[z] = fork() ) == 0){ //hijos que seran hojas
+                    //printf("hojas: soy el hijo %d, mi padre es %d\n",getpid(),getppid());
+                    pidh =getpid();
+                    cifradoCesar(mensajeCifrado, 2 , "archivo.txt", pidh, begin[aux], end[aux], longitud);
+                    aux++;
                     exit(0);
                 }
             }
+
+
             exit(0);
         }
-        if (childpid > 0){
+        if (ramas[j] > 0){
             //estoy en el primer papa
             
         }
     }
-
+    
     return 0;
 }
