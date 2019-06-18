@@ -3,6 +3,7 @@
 #include <string.h> // isalpha, isupper
 #include <ctype.h> // strcspn
 #include <sys/types.h>
+#include <signal.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -30,18 +31,20 @@ void cifradoCesar(char *destino, int rotaciones, char path[], int pid, int inici
     FILE *archivo, *archivo2;
     int tam=0;
     tam = fin - inicio;
-    char mensaje[longitud], auxmensaje[tam];
+    char mensaje[longitud];
     char guardar[tam];
     int cont=0;
-    char archivoid[5], aux[5];
-
+    char archivoid[4]="", aux[4];
+    //sleep(5);
+    //printf(" lo que tiene pid %d\n",pid);
     sprintf(aux,"%d",pid);
     strcat(archivoid, aux);
-    strncat(archivoid, ".txt",5);
+    strncat(archivoid,".txt",5);
     //printf("%s\n",archivoid);
+    //archivoid= NULL;
     
     archivo = fopen(path, "r");
-    
+    fseek(archivo,inicio, SEEK_CUR);
     if (archivo != NULL){
         while(!feof(archivo)){
             fgets(mensaje, MAXIMA_LONGITUD_CADENA, archivo);
@@ -51,15 +54,22 @@ void cifradoCesar(char *destino, int rotaciones, char path[], int pid, int inici
     }
     fclose(archivo);
 
-    printf("inicio: %d\n",inicio);
-    printf("fin: %d\n",fin);
-
+    //printf("inicio: %d\n",inicio);
+    //printf("fin: %d\n",fin);
+    
     //escribo en guardar los caracteres que le toca a cada hoja
+    for (int j=0; j <= fin; j++){
+        
+        guardar[j]= mensaje[j];
+     
+    }
+
+    printf("lo que tiene guardar es: %s\n",guardar);
 
     // cifrado cesar aqui
     int i = 0;
-    while (mensaje[i]) {
-        char caracterActual = mensaje[i];
+    while (guardar[i]) {
+        char caracterActual = guardar[i];
         int posicionOriginal = ord(caracterActual);
         if (!isalpha(caracterActual)) {
         destino[i] = caracterActual;
@@ -90,7 +100,7 @@ void cifradoCesar(char *destino, int rotaciones, char path[], int pid, int inici
 
         fclose(archivo2);
     }
-
+   
 }
 
 // cifrar murcielago en las ramas
@@ -325,21 +335,28 @@ int ord(char c)
     return (int)c; 
 }
 
+/*void incrementar (){
+    aux2++;
+}*/
+
 int main(int argc, char *argv[]) {
-    int i=1, opcion=0, longitud=0, inicio=0, fin=0, validar = 2;
+
+    int i=1, opcion=0, longitud=0, inicio=0, fin=0, validar = 2, partes = 0, cont=0;
     char mensajeCifrado[MAXIMA_LONGITUD_CADENA], mensajeDescifrado[MAXIMA_LONGITUD_CADENA];
     int nprocesos= atoi(argv[1]);
     int numeroh = nprocesos * nprocesos;
     int pidr = 0, pidh = 0; // tomar los pid de las ramas y hojas
-    int aux2=numeroh-1; // auxiliar para recorrer vector de los inicios y fin de cada mensaje para las hojas 
-    int begin[numeroh], end[numeroh]; // vector para guardar los inicios y fin de cada mensaje
-    pid_t ramas[nprocesos], hojas[numeroh] ,wpid;
-    FILE *main;
+    int *aux2=0; // auxiliar para recorrer vector de los inicios y fin de cada mensaje para las hojas 
+    pid_t pid;
+    FILE *main ;    
 
     char cod[MAXIMA_LONGITUD_CADENA];
+    //glob_var = mmap(NULL, sizeof *glob_var, PROT_READ | PROT_WRITE, 
+                    //MAP_SHARED | MAP_ANON, -1, 0);
     
+
     main = fopen("archivo.txt", "r");
-    
+
     if (main != NULL){
         while(!feof(main)){
             fgets(cod, MAXIMA_LONGITUD_CADENA, main);
@@ -350,83 +367,33 @@ int main(int argc, char *argv[]) {
     }
     fclose(main);
 
-    if (longitud % 2 == 0){
-        //printf("el numero es par: %d\n",(longitud % 2));
-        validar = 0; // es par
-    }else {
-        //printf("el numero es impar: %d\n",(longitud % 2));
-        validar = 1; // es impar
-    }
+    partes = longitud / numeroh;
     
-    //calculo de los inicios y final para cada hijo
-    for (int k=0; k < numeroh; k++){
-        if(validar == 1){ // es que la longitud del mensaje es impar
-            if(k == (numeroh-1)){
-                fin = longitud;
-                inicio= k * (longitud / numeroh);
-                //printf("inicio es: %d\n", inicio);
-                //printf("final ultimo: %d\n", fin);
-                //printf("\n");
-                begin[k]=inicio;
-                end[k]=fin;
+    for(int j=0; j < nprocesos; j++){
+        for(int k=0; k < nprocesos; k++){
+            if(cont == numeroh-1){
+                inicio = partes * cont;
+                fin = longitud; 
+                cont++;
             }else{
-                fin = ((k+1) * (longitud / numeroh))-1;
-                inicio= k * (longitud / numeroh);
-                //printf("inicio es: %d\n", inicio);
-                //printf("final es: %d\n", fin);
-                //printf("\n");
-                begin[k]=inicio;
-                end[k]=fin;
+                inicio = partes * cont;
+                fin = (partes * (cont+1)) - 1; 
+                cont++;
             }
-        }else{
-            if(k == (numeroh-1)){
-                fin = longitud;
-                inicio= k * (longitud / numeroh);
-                //printf("inicio es: %d\n", inicio);
-                //printf("final ultimo: %d\n", fin);
-                //printf("\n");
-                begin[k]=inicio;
-                end[k]=fin;
-            }else{
-                fin = ((k+1) * (longitud / numeroh))-1;
-                inicio= k * (longitud / numeroh);
-                //printf("inicio es: %d\n", inicio);
-                //printf("final es: %d\n", fin);
-                //printf("\n");
-                begin[k]=inicio;
-                end[k]=fin;
+            //printf("cont : %d\n",cont);
+
+            pid= fork();
+
+            if ( pid == 0){
+                pidh=getpid();
+                cifradoCesar(mensajeCifrado, 2 , "archivo.txt", pidh, inicio, fin, longitud);
+                //exit(0);
+            }else {
+                //wait(NULL);
+                exit(0);
             }
         }
-    }
-
-
-
-    for (int j=0; j< nprocesos; j++){
-        //hijos que seran las ramas
-        if ( (ramas[j] = fork() ) == 0){
-            //printf("Rama: soy el hijo %d, mi padre es %d\n",getpid(),getppid());
-
-            pidr= getpid();
-            
-            for(int z =0; z < nprocesos; z++){
-                if ((hojas[z] = fork() ) == 0){ //hijos que seran hojas
-                    //printf("hojas: soy el hijo %d, mi padre es %d\n",getpid(),getppid());
-                    pidh =getpid();
-                   
-                    cifradoCesar(mensajeCifrado, 2 , "archivo.txt", pidh, begin[(aux2-z)-j], end[(aux2-z)-j], longitud);
-                    
-
-                    exit(0);
-                }
-            }
-
-
-            exit(0);
-        }
-        if (ramas[j] > 0){
-            //estoy en el primer papa
-            
-        }
+        // aqui hago cifrado murcielago
     }
     
     return 0;

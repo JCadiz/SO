@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h> // isalpha, isupper
 #include <ctype.h> // strcspn
+#include <sys/time.h> 
+#include <math.h> 
 
 #define LONGITUD_ALFABETO 26
 #define INICIO_ALFABETO_MAYUSCULAS 65
@@ -18,6 +20,14 @@ void cifrado(char *destino, int posiciones, char path[]);
 void descifrado(char *destino, int posiciones, char path[]);
 // Obtener el valor entero de un carácter:
 int ord(char c); // https://parzibyte.me/blog/2018/12/11/ord-chr-c/
+
+int tomartiempo(){
+    struct timeval t;
+    int dt;
+    gettimeofday(&t, (struct timezone*)0);
+    dt = (t.tv_sec)*1000000 + t.tv_usec;
+    return dt;
+}
 
 //Funcion para leer archivo
 void cifrado(char *destino, int rotaciones, char path[]){
@@ -262,41 +272,36 @@ int ord(char c)
     return (int)c; 
 }
 
-int main(void) {
+int main(int argc, char *argv[]) {
     int i=1, opcion=0;
+    int tiempoinicial, tiempofinal;
     char mensajeCifrado[MAXIMA_LONGITUD_CADENA], mensajeDescifrado[MAXIMA_LONGITUD_CADENA];
 
-    while (i != 0){
-        printf("    Forma Secuencial - Doble Cifrado    \n");
-        printf("\n");
-        printf("Primero Cifrado Murcielago Y luego Cifrado Cesar \n");
-        printf("\n");
-        printf("1. Crifrar \n");
-        printf("2. Descrifrar \n");
-        printf("3. terminar \n");
-        scanf("%d", &opcion);
-        printf("\n");
-
-        switch (opcion)
+        switch (*argv[1])
         {
-        case 1:
+        case 'c':
             printf("Eligio Cifrar \n");
             printf("\n");
+            tiempoinicial = tomartiempo();
             cifrado( mensajeCifrado, 2, "archivo.txt");
+            tiempofinal = tomartiempo();
+            printf("Tiempo de ejecucion: %8d", tiempofinal - tiempoinicial);
+
             printf("\n");
             break;
-        case 2:
+        case 'd':
             printf("Eligio Descifrar \n");
             printf("\n");
+            tiempoinicial = tomartiempo();
             descifrado(mensajeDescifrado, 2,"Cifrado.txt");
+            tiempofinal = tomartiempo();
+            printf("Tiempo de ejecucion: %8d", tiempofinal - tiempoinicial);
             printf("\n");
             break;
         default:
             i=0;
             break;
         }
-        
-    }
 
     return 0;
 }
