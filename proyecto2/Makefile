@@ -1,8 +1,8 @@
-all: compilar reporte pantalla clean
+main: els.c recorrer.o
+	gcc -g -Wall -o els els.c recorrer.o
 
-compilar:
+recorrer.o: recorrer.c recorrer.h
 	gcc -c recorrer.c recorrer.h
-	gcc recorrer.o els.c -o els
 
 reporte:
 	./els reporte.txt /home/jesus/Documents/UCAB

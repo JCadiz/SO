@@ -2,7 +2,6 @@
 
 //eliminar el archivo CORE e impirmir por pantalla
 void eliminar_coreP(char core[], char path[]){ 
-	char comando[50] = "rm ";
     struct stat statbuf;
     char* ruta = (char *) malloc(strlen(path)* sizeof(char *) );
 
@@ -22,8 +21,7 @@ void eliminar_coreP(char core[], char path[]){
         printf(" %ld",statbuf.st_size);
         printf(" %ld",statbuf.st_blocks);
 
-		strcat(comando, core);
-		system(comando);
+		unlink(ruta);
 	}else{
         //printf("\nNo es el archivo que buscaba\n ");
     }
@@ -31,7 +29,6 @@ void eliminar_coreP(char core[], char path[]){
 
 //eliminar el archivo CORE e guarda en reporte.txt
 void eliminar_core(char core[], char path[], char archivo[]){ 
-	char comando[50] = "rm ";
     struct stat statbuf;
     char* ruta = (char *) malloc(strlen(path)* sizeof(char *) );
     char* contenido = (char *) malloc((strlen(path)*100)* sizeof(char *) );
@@ -59,14 +56,12 @@ void eliminar_core(char core[], char path[], char archivo[]){
         strcat(contenido , bloques);
 
     //elimino el archivo CORE
-		strcat(comando, core);
-		system(comando);
-
+        unlink(ruta);
     //guardo en reporte.txt el valor de contenido 
-        reporte = fopen(archivo, "w");
+        reporte = fopen(archivo, "a");
 
         if (reporte != NULL){
-            fprintf(reporte, "\n%s", contenido);
+            fprintf(reporte, "%s\n", contenido);
 
             fclose(reporte);
         }
@@ -76,16 +71,14 @@ void eliminar_core(char core[], char path[], char archivo[]){
     }
 }
 
-void recorrer(DIR *d, char path[],char nombre[]){   
+void recorrer(DIR *d, char path[], char archivoid[], char nombre[]){   
 
     struct dirent *actual = readdir(d);
     struct stat statbuf;
     char* ruta = (char *) malloc(strlen(path)* sizeof(char *) );
     char* contenido = (char *) malloc((strlen(path)*100)* sizeof(char *) );
-    char* mensaje = (char *) malloc((strlen(path)*1000)* sizeof(char *) );
-    FILE *file, *reporte, *hijo;
-    char archivoid[10], aux[10],archivoid2[10], aux2[10], grupo[10], usuario[10], enlaces[10], bloques[10], size[10];
-    pid_t pid;
+    char grupo[10], usuario[10], enlaces[10], bloques[10], size[10];
+    FILE *file, *reporte;
 
     while(actual != NULL){
        
@@ -101,14 +94,13 @@ void recorrer(DIR *d, char path[],char nombre[]){
 
             if(siguiente != NULL){
                 //es directorio 
-                pid = fork();
-
-                if(pid == 0){ // hijo
-                    stat(ruta, &statbuf);
+            
+                // hijo
+                stat(ruta, &statbuf);
 
                 //path completo 
-                    strcat(contenido , ruta);
-                    strncat(contenido, " ", 1);
+                strcat(contenido , ruta);
+                strncat(contenido, " ", 1);
 
                 //permisos de usuario, grupo u otro 
                 //usuario
@@ -181,7 +173,7 @@ void recorrer(DIR *d, char path[],char nombre[]){
                     strncat(contenido, " ", 1);
 
                 // fecha de acceso y modificacion
-                    strcat(contenido , ctime(&statbuf.st_atim));
+                    strcat(contenido , ctime(&statbuf.st_atim.tv_sec));
                     strncat(contenido, " ", 1);
                     strcat(contenido , ctime(&statbuf.st_mtim.tv_sec));
                     strncat(contenido, " ", 1);
@@ -196,51 +188,26 @@ void recorrer(DIR *d, char path[],char nombre[]){
                     strncat(contenido, " ", 1);
                     strcat(contenido , bloques);
 
-                //creo la epresion para el PID.txt
-                    sprintf(aux,"%d",getpid());
-                    strcat(archivoid, aux);
-                    strncat(archivoid, ".txt",10);
-
-                    file = fopen(archivoid, "w");
+                //escribo para el PID.txt
+                   
+                    file = fopen(archivoid, "a");
 
                     if (file != NULL){
-                        fprintf(file, "\n%s", contenido);
+                        fprintf(file, "%s\n", contenido);
 
                         fclose(file);
                     }
-                    
-                    recorrer(siguiente, ruta, nombre);
 
-                    exit(0);
-                }else { //padre 
-                    int status;
-                    waitpid(pid, &status, 0);
-                /* 
-                //genero la expresion para abrir el txt de mi hijo
-                    sprintf(aux2,"%d",pid);
-                    strcat(archivoid2, aux2);
-                    strncat(archivoid2, ".txt",10);
+                    reporte = fopen(nombre, "a");
 
-                    hijo = fopen(archivoid2, "r");
-                
-                    if (hijo != NULL){
-                        while(!feof(hijo)){
-                            fgets(mensaje, MAX, hijo);
-                            printf("%s\n", mensaje);
-                            //printf("\n");
-                        }
-                    }
-                    fclose(hijo);
-
-                    reporte = fopen(nombre, "w");
-
-                    if (file != NULL){
-                        fprintf(reporte, "\n%s", mensaje);
+                    if (reporte != NULL){
+                        fprintf(reporte, "\t\t%s   %ld   %ld\n", ruta, statbuf.st_nlink, statbuf.st_size);
 
                         fclose(reporte);
                     }
-                    */
-                }   
+                    
+                    recorrer(siguiente, ruta, archivoid, nombre);
+
             }else{
                 //es archivo
                 //printf("es un archivo\n");
@@ -252,8 +219,6 @@ void recorrer(DIR *d, char path[],char nombre[]){
         actual = readdir(d);
     }
 
-    closedir(d);
-
 }
 
 void recorrer_sinFile(DIR *d, char path[]){
@@ -261,7 +226,6 @@ void recorrer_sinFile(DIR *d, char path[]){
     struct dirent *actual = readdir(d);
     struct stat statbuf;
     char* ruta = (char *) malloc(strlen(path)* sizeof(char *) );
-    pid_t pid;
 
     while(actual != NULL){
        
@@ -277,9 +241,7 @@ void recorrer_sinFile(DIR *d, char path[]){
 
             if(siguiente != NULL){
                 //es directorio 
-                pid = fork();
 
-                if(pid == 0){ // hijo
                     stat(ruta, &statbuf);
 
                 //path completo 
@@ -310,7 +272,7 @@ void recorrer_sinFile(DIR *d, char path[]){
                     printf(" %d",statbuf.st_gid);
 
                 // fecha de acceso y modificacion
-                    printf(" %s",ctime(&statbuf.st_atim));
+                    printf(" %s",ctime(&statbuf.st_atim.tv_sec));
                     printf(" %s",ctime(&statbuf.st_mtim.tv_sec)); 
 
                 //numero de enlaces y tamano de bloques
@@ -320,13 +282,9 @@ void recorrer_sinFile(DIR *d, char path[]){
 
                     recorrer_sinFile(siguiente, ruta);
 
-                    exit(0);
-                }else { //padre 
-                    wait(NULL);
-                }   
             }else{
                 //es archivo
-                //printf("es un archivo\n");
+                //printf("es un archivo\n%s",actual->d_name);
 
                 eliminar_coreP(actual->d_name, path); 
             }

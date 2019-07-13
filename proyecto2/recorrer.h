@@ -17,5 +17,5 @@
 
 void eliminar_coreP(char core[], char path[]);
 void eliminar_core(char core[], char path[], char archivo[]);
-void recorrer(DIR *d, char path[],char nombre[]);
+void recorrer(DIR *d, char path[], char archivoid[], char nombre[]);
 void recorrer_sinFile(DIR *d, char path[]);
